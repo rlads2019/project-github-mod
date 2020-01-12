@@ -1,0 +1,52 @@
+```{r}
+devtools::install_github("soodoku/tuber", build_vignettes = TRUE)
+
+
+```
+
+```{r}
+library(httr)
+library(tuber)
+library(stringr)
+library(tibble)
+library(dplyr)
+
+app_id ="956042567986-v02ke4ihcca34j0sivjn67dcnoo4kbn4.apps.googleusercontent.com"
+
+app_secret = "tyEuYXXWvcT29ZPeU8VRwLKe"
+
+yt_oauth(app_id,app_secret,token="")
+
+#Get youtube data
+youdat <- yt_search(term = "", max_results = 5, channel_id = "UCSZlxQzFeHpZKKd7_HK-SIA")
+
+youdat_tibble <- as_tibble(youdat)
+
+#change the formats of the dates(e.g. 2000-01-01 -> 2000-01)
+date <- as.Date(youdat_tibble$publishedAt)
+date1 <- str_replace(date, "(\\d{4})-(\\d{2})-(\\d{2})" ,"\\1-\\2")
+
+#filter the videos uploaded in 2019 and calculate how many videos are uploaded per month
+month_frequency <-  youdat_tibble %>%
+  
+  mutate(date1 = date1)%>%
+  filter(date1 > "2018-12") %>%
+  arrange(date1)%>%
+  group_by(date1)%>%
+  summarise(count = n())
+
+#empty vector to save the result
+between_upload <- c()
+#order the date
+date_order <- sort(date)
+
+#calculate the time between each video
+for(i in 2:length(date_order)){
+    between_upload[i-1] <- date_order[i] - date_order[i-1]
+  }
+  
+
+mean(between_upload)
+median(between_upload)
+
+```

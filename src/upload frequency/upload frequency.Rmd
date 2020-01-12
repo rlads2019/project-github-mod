@@ -1,0 +1,206 @@
+```{r}
+devtools::install_github("soodoku/tuber", build_vignettes = TRUE)
+
+
+```
+
+```{r}
+library(httr)
+library(tuber)
+library(stringr)
+library(tibble)
+library(dplyr)
+
+app_id ="177968669664-bm4it868718roj42rjlvj0lilclf4jr3.apps.googleusercontent.com"
+
+app_secret = "rb-HuCJwAWYnQiG5guZ9lFhO"
+
+yt_oauth(app_id,app_secret,token="")
+
+#Get youtube data
+youdat <- yt_search(term = "", max_results = 5, channel_id = "UCSZlxQzFeHpZKKd7_HK-SIA")
+
+
+X <- list()
+for(i in c(1:100)){
+    X[[i]] <- read_csv(paste0(i,".csv"))
+}
+
+month_frequency <- list()
+mean_between_upload <- c()
+median_between_upload <- c()
+
+
+
+for(i in seq_along(X)){
+between_upload <- c()
+#change the formats of the dates(e.g. 2000-01-01 -> 2000-01)
+
+  
+  
+  date <- as.Date(X[[i]]$publication_date)
+  date1 <- str_replace(date, "(\\d{4})-(\\d{2})-(\\d{2})" ,"\\1-\\2")
+
+  #filter the videos uploaded in 2019 and calculate how many videos are     uploaded per month
+  
+  month_frequency[[i]] <-  X[[i]] %>%
+  
+  mutate(date1 = date1)%>%
+  filter(date1 > "2018-12") %>%
+  arrange(date1)%>%
+  group_by(date1)%>%
+  summarise(count = n())
+
+#empty vector to save the result
+
+#order the date
+date_order <- sort(date)
+
+#calculate the time between each video
+for(j in 2:length(date_order)){
+    between_upload[j-1] <- date_order[j] - date_order[j-1]
+  }
+
+
+
+mean_between_upload[i] <- mean(between_upload)
+median_between_upload[i] <- median(between_upload)
+}
+
+
+
+
+```
+
+
+
+
+
+```{r}
+library(readr)
+library(dplyr)
+View <- read_csv("View.csv")
+allviewcount <- View %>%
+  group_by(Rank)%>%
+  summarise(allviewcounts = sum(View))
+video_sum <- View %>%
+  group_by(Rank)%>%
+  summarise(video_sum = n())
+
+averageviewcount <- c()
+for(i in 1:100){
+averageviewcount[i] <- allviewcount[i,2]/video_sum[i,2]
+}
+
+averagecount <- c()
+for(i in seq_along(averageviewcount)){
+  averagecount[i] <- averageviewcount[[i]][1]
+}
+
+data1 <- tibble(mean_between_upload = mean_between_upload)
+
+data1 <-  data1 %>%
+  mutate(median_between_upload = median_between_upload)%>%
+  mutate(averagecount = averagecount)%>%
+  filter(mean_between_upload < 100)%>%
+  filter(averagecount < 1000000)
+  
+
+library(ggplot2)
+countplot1 <- ggplot(data = data1) +                                
+  geom_point(mapping = aes(x = mean_between_upload, y = averagecount)) +
+  geom_smooth(mapping = aes(x = mean_between_upload, y = averagecount))
+
+countplot2 <- ggplot(data = data1) +                                
+  geom_point(mapping = aes(x = median_between_upload, y = averagecount)) + geom_smooth(mapping = aes(x = median_between_upload, y = averagecount))
+
+
+
+ar <- read_csv("α.csv")
+be <- read_csv("β.csv")
+####
+ardata <- ar %>%
+  group_by(Rank)%>%
+  summarise(ar = α[1])
+
+ar_data <- c()
+for(i in 1:100){
+  ar_data[i] <- ardata[i,2]
+}
+ardata <- c()
+for(i in 1:100){
+  ardata[i] <- ar_data[[i]][1]
+}
+
+
+####
+
+####
+bedata <- be %>%
+  group_by(Rank)%>%
+  summarise(be = β[1])
+
+be_data <- c()
+for(i in 1:100){
+  be_data[i] <- bedata[i,2]
+}
+bedata <- c()
+for(i in 1:100){
+  bedata[i] <- be_data[[i]][1]
+}
+
+####
+
+data2 <- tibble(mean_between_upload = mean_between_upload)
+
+data2 <-  data2 %>%
+  mutate(median_between_upload = median_between_upload)%>%
+  mutate(ar = ardata)%>%
+  mutate(be = bedata)%>%
+  filter(mean_between_upload < 100)%>%
+  filter(ar < 0.3)%>%
+  filter(be < 12)
+
+arplot1 <- ggplot(data = data2) +                                
+  geom_point(mapping = aes(x = mean_between_upload, y = ar)) +
+  geom_smooth(mapping = aes(x = mean_between_upload, y = ar))
+
+arplot2 <- ggplot(data = data2) +                                
+  geom_point(mapping = aes(x = median_between_upload, y = ar)) +
+  geom_smooth(mapping = aes(x = median_between_upload, y = ar))
+
+beplot1 <- ggplot(data = data2) +                                
+  geom_point(mapping = aes(x = mean_between_upload, y = be)) +
+  geom_smooth(mapping = aes(x = mean_between_upload, y = be))
+
+beplot2 <- ggplot(data = data2) +                                
+  geom_point(mapping = aes(x = median_between_upload, y = be)) +
+  geom_smooth(mapping = aes(x = median_between_upload, y = be))
+
+
+
+taiwan_growth_channel_stats <- read_csv("taiwan_growth_channel_stats.csv")
+
+subs <- c()
+for(i in 1:100){
+subs[i] <- taiwan_growth_channel_stats[[i,4]]
+}
+
+data3 <- tibble(mean_between_upload = mean_between_upload)
+
+data3 <-  data3 %>%
+  mutate(median_between_upload = median_between_upload)%>%
+  mutate(subs = subs)%>%
+  filter(mean_between_upload < 50)%>%
+  filter(median_between_upload < 12)%>%
+  filter(subs < 40000000)
+
+subsplot1 <- ggplot(data = data3) +                                
+  geom_point(mapping = aes(x = mean_between_upload, y = subs)) +
+  geom_smooth(mapping = aes(x = mean_between_upload, y = subs))
+
+subsplot2 <- ggplot(data = data3) +                                
+  geom_point(mapping = aes(x = median_between_upload, y = subs)) +
+  geom_smooth(mapping = aes(x = median_between_upload, y = subs))
+
+```

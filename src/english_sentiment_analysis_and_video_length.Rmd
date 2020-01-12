@@ -1,0 +1,95 @@
+---
+title: "Untitled"
+author: "Arthur Tsai"
+date: "2020/1/3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+library(tidytext)
+library(quanteda)
+library(syuzhet)
+get_sentiments("afinn")
+get_sentiments("bing")
+get_sentiments("nrc")
+library(syuzhet)
+get_sentiment("happy", method = "syuzhet", path_to_tagger = NULL,cl = NULL, language = "english", lexicon = NULL)
+
+get_nrc_sentiment("happy")
+get_sentiment("happy", method = "afinn")
+
+
+
+youdat2 <- yt_search(term = "", max_results = 5, channel_id = "UCujr_HrX3ThMb34DV5YXHIg")
+
+youdat2_tibble <- as_tibble(youdat2)
+
+
+
+
+youdat2_description <- as.character(youdat2_tibble$description)
+
+youdat2_description_afinn <- get_sentiment(youdat2_description, method = "afinn")
+
+#youdat2_description_nrc <- get_sentiment(youdat2_description, method = "nrc")
+
+youdat2_description_nrc <- get_nrc_sentiment(youdat2_description)
+
+
+
+```
+
+
+```{r}
+
+#grab captions and make them neat
+caption_track <- list_caption_tracks(video_id = "_f-qkGJBPts")
+captions_raw <- get_captions(caption_track$id[2]) %>% rawToChar()%>% strsplit(split = '\n')
+
+captions_raw_split <- c()
+for(i in seq_along(captions_raw[[1]])){
+  captions_raw_split[i] <- captions_raw[[1]][i]
+}
+
+#---video_length
+time <- strsplit(captions_raw_split[length(captions_raw_split)-2],",")
+time <- time[[1]][2]
+tmp <- strptime(time ,"%H:%M:%OS")
+video_length <- as.numeric(strftime(tmp,'%OS'))+60*as.numeric(strftime(tmp,'%M'))+60*60*as.numeric(strftime(tmp,'%H'))
+#---video_length
+
+#filter unnecessary data
+caption_filter_1 <- str_detect(captions_raw_split, "\\w")
+
+captions_raw_split <- captions_raw_split[caption_filter_1]
+caption_filter_2 <- !str_detect(captions_raw_split,"^\\d{1,2}\\:\\d{2}")
+captions_raw_split <- captions_raw_split[caption_filter_2]
+
+
+
+
+```

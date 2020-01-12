@@ -1,0 +1,74 @@
+---
+title: "Untitled"
+author: "Arthur Tsai"
+date: "2020/1/8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(jiebaR)
+library(readr)
+seg <- worker(user = "path/to/user_dict")
+word <- c(segment("失業的熊讚陪柯文哲看銀翼殺手", seg))
+ch_senti_lex <- read_csv("ch.senti.lex.csv")
+p <- c()
+logicc <- c()
+
+for(i in seq_along(word)){
+logicc <- ch_senti_lex[,"lemma"] == word[i] 
+logicc <- c(logicc)
+logicc <- na.omit(ch_senti_lex[logicc, "Polarity"])
+p[i] <- logicc[1, "Polarity"]
+}
+
+q <- c()
+
+for(i in seq_along(p)){
+  q[i] <- p[[i]][1]
+}
+
+
+q <- na.omit(q)
+
+score <- c()
+
+for(i in seq_along(q)){
+  
+  if(is.na(q[i])){
+    score[i] <- 0
+  }
+  else if(q[i] == "P"){
+    score[i] <- 1
+  }
+  else{
+    score[i] <- -1
+  }
+}
+positive <- score[score == 1]
+positive_number <- length(positive)
+negative <- score[score == -1]
+negative_number <- length(negative)
+
+sum(score)
+
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
